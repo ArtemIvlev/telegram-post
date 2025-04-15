@@ -32,7 +32,6 @@ ENV/
 *.swo
 
 # Project specific
-config.py
 *.session
 *.session-journal
 .env 
