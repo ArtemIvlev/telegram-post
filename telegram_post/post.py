@@ -1,10 +1,10 @@
 import os
 import logging
 import shutil
-from telegram_post.config import API_ID, API_HASH, SESSION_PATH, CHANNEL_USERNAME, CHANNEL_ID, CHANNEL_TITLE, STATUS_PUBLISHED
+from config import API_ID, API_HASH, SESSION_PATH, CHANNEL_USERNAME, CHANNEL_ID, CHANNEL_TITLE, STATUS_PUBLISHED
 from telethon import TelegramClient
 from telethon.tl.types import InputMediaUploadedPhoto
-from .database import get_random_approved_photo, get_photo_path, update_photo_status
+from telegram_post.database import get_random_approved_photo, get_photo_path, update_photo_status
 
 # Настройка логирования
 logging.basicConfig(

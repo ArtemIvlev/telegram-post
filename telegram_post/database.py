@@ -3,7 +3,7 @@ import logging
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import random
-from telegram_post.config import PG_CONNECTION_PARAMS, TABLE_NAME, STATUS_PUBLISHED
+from config import PG_CONNECTION_PARAMS, TABLE_NAME, STATUS_PUBLISHED
 
 def get_table_structure():
     """
