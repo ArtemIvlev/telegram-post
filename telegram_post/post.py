@@ -1,9 +1,10 @@
-from telethon import TelegramClient
-from telethon.tl.types import InputPeerChannel
-from config import API_ID, API_HASH, SESSION_PATH, CHANNEL_USERNAME, CHANNEL_ID, CHANNEL_TITLE, STATUS_PUBLISHED
-import logging
 import os
-from database import get_random_approved_photo, get_photo_path, update_photo_status
+import logging
+import shutil
+from telegram_post.config import API_ID, API_HASH, SESSION_PATH, CHANNEL_USERNAME, CHANNEL_ID, CHANNEL_TITLE, STATUS_PUBLISHED
+from telethon import TelegramClient
+from telethon.tl.types import InputMediaUploadedPhoto
+from .database import get_random_approved_photo, get_photo_path, update_photo_status
 
 # Настройка логирования
 logging.basicConfig(
@@ -11,6 +12,34 @@ logging.basicConfig(
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
+
+def get_session_file():
+    """
+    Проверяет наличие локального файла сессии и при необходимости копирует его из SESSION_PATH
+    
+    Returns:
+        str: Путь к файлу сессии для использования
+    """
+    local_session = 'tg-post.session'
+    
+    # Проверяем наличие локального файла сессии
+    if os.path.exists(local_session):
+        logger.info(f"Найден локальный файл сессии: {local_session}")
+        return local_session
+    
+    # Если локального файла нет, проверяем SESSION_PATH
+    if os.path.exists(SESSION_PATH):
+        logger.info(f"Копируем файл сессии из {SESSION_PATH} в {local_session}")
+        try:
+            shutil.copy2(SESSION_PATH, local_session)
+            logger.info("Файл сессии успешно скопирован")
+            return local_session
+        except Exception as e:
+            logger.error(f"Ошибка при копировании файла сессии: {str(e)}")
+            return SESSION_PATH
+    
+    logger.info(f"Файл сессии не найден, будет создан новый: {local_session}")
+    return local_session
 
 async def post_to_channel(text: str, media_path: str = None, parse_mode: str = 'html'):
     """
@@ -29,16 +58,13 @@ async def post_to_channel(text: str, media_path: str = None, parse_mode: str = '
         logger.info(f"API_ID: {API_ID}")
         logger.info(f"CHANNEL_USERNAME: {CHANNEL_USERNAME}")
         logger.info(f"CHANNEL_ID: {CHANNEL_ID}")
-        logger.info(f"SESSION_PATH: {SESSION_PATH}")
         
-        # Проверяем существование файла сессии
-        if os.path.exists(SESSION_PATH):
-            logger.info(f"Файл сессии существует: {SESSION_PATH}")
-        else:
-            logger.info(f"Файл сессии не существует, будет создан новый: {SESSION_PATH}")
+        # Получаем путь к файлу сессии
+        session_file = get_session_file()
+        logger.info(f"Используется файл сессии: {session_file}")
         
         # Инициализация клиента
-        client = TelegramClient(SESSION_PATH, API_ID, API_HASH)
+        client = TelegramClient(session_file, API_ID, API_HASH)
         logger.info("Клиент Telegram инициализирован")
         
         await client.start()
